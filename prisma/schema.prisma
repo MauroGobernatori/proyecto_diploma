@@ -119,14 +119,14 @@ model Curso {
   tema               String?
   formato            String?
   matriculacionLibre Boolean     @default(false)
-  visibilidad        Boolean     @default(true) // Ocultar/mostrar
+  visibilidad        Boolean     @default(true)
   estado             EstadoCurso @default(CREADO)
   creadoEn           DateTime    @default(now())
 
-  secciones   Seccion[]
-  usuarios    UsuarioRol[]
-  recompensas Recompensa[]
-  reportes    Reporte[]
+  secciones        Seccion[]
+  usuarios         UsuarioRol[]
+  reglasRecompensa RecompensaRegla[] // Cambia la relación directa por la de reglas
+  reportes         Reporte[]
 }
 
 model Seccion {
@@ -165,17 +165,16 @@ model Grupo {
 // --- RECOMPENSAS ---
 
 model Recompensa {
-  id                    String           @id @default(cuid())
-  nombre                String
-  descripcion           String
-  fechaHabilitacion     DateTime
-  fechaInhabilitacion   DateTime
-  otorgamientoMultiple  Boolean          @default(false)
-  requiereTodosLosCursos Boolean         @default(false) // Si es true, requiere completar TODOS los cursos vinculados
-  estado                EstadoRecompensa @default(ACTIVO)
-  creadoEn              DateTime         @default(now())
+  id                   String             @id @default(cuid())
+  nombre               String
+  descripcion          String
+  fechaHabilitacion    DateTime
+  fechaInhabilitacion  DateTime
+  otorgamientoMultiple Boolean            @default(false)
+  estado               EstadoRecompensa   @default(ACTIVO)
+  creadoEn             DateTime           @default(now())
 
-  cursos       Curso[]
+  reglas       RecompensaRegla[]
   obtenidasPor RecompensaObtenida[]
 }
 
@@ -189,7 +188,16 @@ model RecompensaObtenida {
   recompensa Recompensa @relation(fields: [recompensaId], references: [id], onDelete: Cascade)
 }
 
-// --- REPORTES (Para cumplimiento formal con la materia) ---
+model RecompensaRegla {
+  id           String     @id @default(cuid())
+  recompensaId String
+  nombre       String?    // Ej: "Opción Individual", "Opción Combo 3 y 4"
+
+  recompensa   Recompensa @relation(fields: [recompensaId], references: [id], onDelete: Cascade)
+  cursos       Curso[]
+}
+
+// --- REPORTES ---
 
 model Reporte {
   id            String   @id @default(cuid())
