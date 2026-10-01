@@ -10,15 +10,10 @@ datasource db {
 
 // --- ENUMS ---
 
-enum RolPlataforma {
-  ADMINISTRADOR
-  GESTOR
-  GENERAL
-}
-
-enum RolCurso {
-  DOCENTE
-  ALUMNO
+enum NivelRol {
+  PLATAFORMA
+  CURSO
+  GRUPO
 }
 
 enum EstadoCurso {
@@ -28,135 +23,185 @@ enum EstadoCurso {
   ELIMINADO
 }
 
+enum TipoRecurso {
+  LINK
+  VIDEO
+  DOCUMENTO
+  ACTIVIDAD
+  EVALUACION
+}
+
 enum EstadoRecompensa {
   ACTIVO
   INACTIVO
   ELIMINADO
 }
 
-// --- MODELOS DE USUARIO Y ROLES ---
+// --- USUARIOS, ROLES Y PERMISOS (RBAC DINÁMICO) ---
 
 model Usuario {
-  id            Int           @id @default(autoincrement())
-  usuario       String        @unique
-  contrasenia   String
-  nombre        String
-  apellido      String
-  email         String        @unique
-  edad          Int?
-  empresa       String?
-  institucion   String?
-  dni           String?
-  rolPlataforma RolPlataforma @default(GENERAL)
-  creadoEn      DateTime      @default(now())
+  id          String   @id @default(cuid())
+  usuario     String   @unique
+  contrasenia String
+  nombre      String
+  apellido    String
+  email       String   @unique
+  edad        Int?
+  empresa     String?
+  institucion String?
+  dni         String?
+  activo      Boolean  @default(true)
+  creadoEn    DateTime @default(now())
 
   // Relaciones
-  cursosInscriptos     UsuarioCurso[]
-  grupos               UsuarioGrupo[]
+  roles                UsuarioRol[]
   recompensasObtenidas RecompensaObtenida[]
+  reportes             Reporte[]
 }
 
-// --- MODELOS DE CURSOS Y CONTENIDOS ---
+model Permiso {
+  id          String   @id @default(cuid())
+  nombre      String   // Ej: "Crear curso"
+  clave       String   @unique // Ej: "curso:crear"
+  categoria   String?  // Ej: "Gestión de Cursos"
+  
+  roles       RolPermiso[]
+}
+
+model Rol {
+  id          String   @id @default(cuid())
+  nombre      String   // Ej: "Administrador", "Docente", "Jefe de Grupo"
+  nivel       NivelRol @default(PLATAFORMA)
+  esSistema   Boolean  @default(false) // Si es true, no se puede eliminar por el admin
+
+  permisos    RolPermiso[]
+  usuarios    UsuarioRol[]
+  
+  @@unique([nombre, nivel])
+}
+
+model RolPermiso {
+  rolId     String
+  permisoId String
+
+  rol       Rol     @relation(fields: [rolId], references: [id], onDelete: Cascade)
+  permiso   Permiso @relation(fields: [permisoId], references: [id], onDelete: Cascade)
+
+  @@id([rolId, permisoId])
+}
+
+model UsuarioRol {
+  id        String   @id @default(cuid())
+  usuarioId String
+  rolId     String
+  
+  // Scopes opcionales (Si el rol es a nivel de Curso o Grupo)
+  cursoId   String?
+  grupoId   String?
+
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  rol       Rol     @relation(fields: [rolId], references: [id], onDelete: Cascade)
+  curso     Curso?  @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  grupo     Grupo?  @relation(fields: [grupoId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, rolId, cursoId, grupoId])
+}
+
+// --- CURSOS Y CONTENIDOS ---
 
 model Curso {
-  id                Int         @id @default(autoincrement())
-  nombre            String
-  descripcion       String
-  logo              String?
-  fechaInicio       DateTime?
-  fechaFin          DateTime?
-  tema              String?
-  formato           String?
-  matriculacionLibre Boolean    @default(false)
-  visibilidad       Boolean     @default(true)
-  estado            EstadoCurso @default(CREADO)
-  creadoEn          DateTime    @default(now())
+  id                 String      @id @default(cuid())
+  nombre             String
+  descripcion        String
+  logo               String?
+  fechaInicio        DateTime?
+  fechaFin           DateTime?
+  tema               String?
+  formato            String?
+  matriculacionLibre Boolean     @default(false)
+  visibilidad        Boolean     @default(true) // Ocultar/mostrar
+  estado             EstadoCurso @default(CREADO)
+  creadoEn           DateTime    @default(now())
 
-  // Relaciones
   secciones   Seccion[]
-  usuarios    UsuarioCurso[]
-  recompensas Recompensa[] // Relación M:N implícita con Recompensa
-}
-
-model UsuarioCurso {
-  id        Int      @id @default(autoincrement())
-  usuarioId Int
-  cursoId   Int
-  rol       RolCurso @default(ALUMNO)
-
-  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  curso   Curso   @relation(fields: [cursoId], references: [id], onDelete: Cascade)
-
-  @@unique([usuarioId, cursoId])
+  usuarios    UsuarioRol[]
+  recompensas Recompensa[]
+  reportes    Reporte[]
 }
 
 model Seccion {
-  id      Int    @id @default(autoincrement())
+  id      String @id @default(cuid())
   nombre  String
   orden   Int    @default(1)
-  cursoId Int
+  cursoId String
 
   curso    Curso     @relation(fields: [cursoId], references: [id], onDelete: Cascade)
   recursos Recurso[]
 }
 
 model Recurso {
-  id          Int     @id @default(autoincrement())
+  id          String      @id @default(cuid())
   nombre      String
   descripcion String?
-  tipo        String  // Link, Video, Documento, Actividad, Evaluacion
+  tipo        TipoRecurso
   url         String?
-  orden       Int     @default(1)
-  estado      Boolean @default(true)
-  seccionId   Int
+  orden       Int         @default(1)
+  estado      Boolean     @default(true)
+  seccionId   String
 
   seccion Seccion @relation(fields: [seccionId], references: [id], onDelete: Cascade)
 }
 
-// --- MODELOS DE GRUPOS DE TRABAJO/USUARIOS ---
+// --- GRUPOS ---
 
 model Grupo {
-  id            Int            @id @default(autoincrement())
+  id            String       @id @default(cuid())
   nombre        String
-  fechaCreacion DateTime       @default(now())
-  usuarios      UsuarioGrupo[]
+  fechaCreacion DateTime     @default(now())
+  usuarios      UsuarioRol[]
+  reportes      Reporte[]
 }
 
-model UsuarioGrupo {
-  id        Int    @id @default(autoincrement())
-  usuarioId Int
-  grupoId   Int
-  rol       String // Jefe, Integrante
-
-  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  grupo   Grupo   @relation(fields: [grupoId], references: [id], onDelete: Cascade)
-
-  @@unique([usuarioId, grupoId])
-}
-
-// --- MODELOS DE RECOMPENSAS ---
+// --- RECOMPENSAS ---
 
 model Recompensa {
-  id                   Int              @id @default(autoincrement())
-  nombre               String
-  descripcion          String
-  fechaHabilitacion    DateTime
-  fechaInhabilitacion  DateTime
-  otorgamientoMultiple Boolean          @default(false)
-  estado               EstadoRecompensa @default(ACTIVO)
-  creadoEn             DateTime         @default(now())
+  id                    String           @id @default(cuid())
+  nombre                String
+  descripcion           String
+  fechaHabilitacion     DateTime
+  fechaInhabilitacion   DateTime
+  otorgamientoMultiple  Boolean          @default(false)
+  requiereTodosLosCursos Boolean         @default(false) // Si es true, requiere completar TODOS los cursos vinculados
+  estado                EstadoRecompensa @default(ACTIVO)
+  creadoEn              DateTime         @default(now())
 
-  // Relaciones
-  cursos       Curso[]              // Recompensa vinculada a 1 o N cursos (RF-32)
-  obtenidasPor RecompensaObtenida[] // Registro de quién la obtuvo
+  cursos       Curso[]
+  obtenidasPor RecompensaObtenida[]
 }
 
 model RecompensaObtenida {
-  id             Int        @id @default(autoincrement())
-  usuarioId      Int
-  recompensaId   Int
+  id             String     @id @default(cuid())
+  usuarioId      String
+  recompensaId   String
   fechaObtencion DateTime   @default(now())
 
   usuario    Usuario    @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   recompensa Recompensa @relation(fields: [recompensaId], references: [id], onDelete: Cascade)
+}
+
+// --- REPORTES (Para cumplimiento formal con la materia) ---
+
+model Reporte {
+  id            String   @id @default(cuid())
+  nombre        String
+  tipo          String   // Ej: "Progreso Cursos", "Actividad Usuario"
+  fechaCreacion DateTime @default(now())
+  
+  usuarioId     String?
+  cursoId       String?
+  grupoId       String?
+
+  usuario Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  curso   Curso?   @relation(fields: [cursoId], references: [id], onDelete: SetNull)
+  grupo   Grupo?   @relation(fields: [grupoId], references: [id], onDelete: SetNull)
 }
