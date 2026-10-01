@@ -14,6 +14,7 @@ async function main() {
   // 1. Limpieza de base de datos (orden inverso a las dependencias)
   await prisma.reporte.deleteMany()
   await prisma.recompensaObtenida.deleteMany()
+  await prisma.recompensaRegla.deleteMany() // <-- Agregado para limpiar las reglas
   await prisma.recompensa.deleteMany()
   await prisma.recurso.deleteMany()
   await prisma.seccion.deleteMany()
@@ -25,7 +26,7 @@ async function main() {
   await prisma.grupo.deleteMany()
   await prisma.usuario.deleteMany()
 
-  // 2. Crear Permisos Básicos de la Plataforma
+  // 2. Crear Permisos Básicos
   const permisosData = [
     { nombre: 'Crear usuario', clave: 'usuario:crear', categoria: 'Gestión de Usuarios' },
     { nombre: 'Modificar usuario', clave: 'usuario:modificar', categoria: 'Gestión de Usuarios' },
@@ -45,64 +46,36 @@ async function main() {
     permisosData.map((p) => prisma.permiso.create({ data: p }))
   )
 
-  // 3. Crear Roles Base del Sistema (Nivel Plataforma, Curso y Grupo)
+  // 3. Crear Roles Base
   const rolAdmin = await prisma.rol.create({
-    data: {
-      nombre: 'Administrador',
-      nivel: NivelRol.PLATAFORMA,
-      esSistema: true,
-    },
+    data: { nombre: 'Administrador', nivel: NivelRol.PLATAFORMA, esSistema: true },
   })
 
   const rolGestor = await prisma.rol.create({
-    data: {
-      nombre: 'Gestor',
-      nivel: NivelRol.PLATAFORMA,
-      esSistema: true,
-    },
+    data: { nombre: 'Gestor', nivel: NivelRol.PLATAFORMA, esSistema: true },
   })
 
   const rolGeneral = await prisma.rol.create({
-    data: {
-      nombre: 'General',
-      nivel: NivelRol.PLATAFORMA,
-      esSistema: true,
-    },
+    data: { nombre: 'General', nivel: NivelRol.PLATAFORMA, esSistema: true },
   })
 
   const rolDocente = await prisma.rol.create({
-    data: {
-      nombre: 'Docente',
-      nivel: NivelRol.CURSO,
-      esSistema: true,
-    },
+    data: { nombre: 'Docente', nivel: NivelRol.CURSO, esSistema: true },
   })
 
   const rolAlumno = await prisma.rol.create({
-    data: {
-      nombre: 'Alumno',
-      nivel: NivelRol.CURSO,
-      esSistema: true,
-    },
+    data: { nombre: 'Alumno', nivel: NivelRol.CURSO, esSistema: true },
   })
 
   const rolJefe = await prisma.rol.create({
-    data: {
-      nombre: 'Jefe',
-      nivel: NivelRol.GRUPO,
-      esSistema: true,
-    },
+    data: { nombre: 'Jefe', nivel: NivelRol.GRUPO, esSistema: true },
   })
 
   const rolIntegrante = await prisma.rol.create({
-    data: {
-      nombre: 'Integrante',
-      nivel: NivelRol.GRUPO,
-      esSistema: true,
-    },
+    data: { nombre: 'Integrante', nivel: NivelRol.GRUPO, esSistema: true },
   })
 
-  // 4. Asignar TODOS los permisos al Rol Administrador
+  // 4. Asignar Permisos a Admin
   await prisma.rolPermiso.createMany({
     data: permisosCreados.map((permiso) => ({
       rolId: rolAdmin.id,
@@ -110,11 +83,11 @@ async function main() {
     })),
   })
 
-  // 5. Crear Usuario Administrador Único
+  // 5. Crear Usuario Admin
   const adminUsuario = await prisma.usuario.create({
     data: {
       usuario: 'admin',
-      contrasenia: 'admin123', // En producción se almacena con hash (bcrypt/argon2)
+      contrasenia: 'admin123',
       nombre: 'Mauro',
       apellido: 'Gobernatori',
       email: 'admin@hunko.com',
@@ -123,7 +96,6 @@ async function main() {
     },
   })
 
-  // Asignarle el rol de Administrador de Plataforma
   await prisma.usuarioRol.create({
     data: {
       usuarioId: adminUsuario.id,
@@ -131,7 +103,7 @@ async function main() {
     },
   })
 
-  // 6. Crear Usuario Alumno de prueba (para probar flujos de alumno/demo)
+  // 6. Crear Usuario Alumno Demo
   const alumnoUsuario = await prisma.usuario.create({
     data: {
       usuario: 'alumno1',
@@ -151,7 +123,7 @@ async function main() {
     },
   })
 
-  // 7. Crear 1 Curso Demo con Contenido
+  // 7. Crear Curso Demo
   const cursoDemo = await prisma.curso.create({
     data: {
       nombre: 'Ingeniería de Software II',
@@ -186,7 +158,7 @@ async function main() {
     },
   })
 
-  // Inscribir al Alumno en el Curso Demo con rol ALUMNO
+  // Inscribir usuarios al curso demo
   await prisma.usuarioRol.create({
     data: {
       usuarioId: alumnoUsuario.id,
@@ -195,7 +167,6 @@ async function main() {
     },
   })
 
-  // Inscribir al Admin en el Curso Demo como DOCENTE
   await prisma.usuarioRol.create({
     data: {
       usuarioId: adminUsuario.id,
@@ -204,7 +175,7 @@ async function main() {
     },
   })
 
-  // 8. Crear 1 Recompensa Demo asociada al Curso
+  // 8. Crear Recompensa Demo con REGLA VINCULADA
   const hoy = new Date()
   const unMesDespues = new Date()
   unMesDespues.setMonth(hoy.getMonth() + 1)
@@ -212,19 +183,25 @@ async function main() {
   const recompensaDemo = await prisma.recompensa.create({
     data: {
       nombre: '1 Día Libre',
-      descripcion: 'Beneficio otorgado por finalizar con éxito el curso de Ingeniería de Software II.',
+      descripcion: 'Beneficio otorgado por finalizar el curso de Ingeniería de Software II.',
       fechaHabilitacion: hoy,
       fechaInhabilitacion: unMesDespues,
       otorgamientoMultiple: false,
-      requiereTodosLosCursos: false,
       estado: EstadoRecompensa.ACTIVO,
-      cursos: {
-        connect: [{ id: cursoDemo.id }],
+      reglas: {
+        create: [
+          {
+            nombre: 'Regla Individual - Curso Demo',
+            cursos: {
+              connect: [{ id: cursoDemo.id }],
+            },
+          },
+        ],
       },
     },
   })
 
-  // 9. Asignar Recompensa al Alumno (Demo de otorgamiento)
+  // 9. Asignar Recompensa obtenida al alumno
   await prisma.recompensaObtenida.create({
     data: {
       usuarioId: alumnoUsuario.id,
@@ -232,7 +209,7 @@ async function main() {
     },
   })
 
-  console.log('Seed ejecutado con éxito. Base de datos poblada.')
+  console.log('Seed ejecutado con éxito. Base de datos actualizada.')
 }
 
 main()
