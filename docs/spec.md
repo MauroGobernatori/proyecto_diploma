@@ -77,6 +77,8 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 - El Administrador puede asignar cualquier usuario a Cursos con rol Docente o Alumno.
 - El Gestor puede asignar a Cursos usuarios con rol General, como Docente o Alumno.
 - El Administrador puede modificar dentro de un Curso el rol de un usuario que sea Docente o Alumno.
+- Al asignar un usuario a un Curso, se registra su fecha de inscripción y su estado de participación.
+- La participación comienza en estado `EN_CURSO`; al finalizar el Curso para ese usuario, cambia a `FINALIZADO` y se guarda la fecha de finalización.
 
 ### H7 — Gestionar cursos
 
@@ -178,6 +180,7 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 - **RF-24:** El sistema debe permitir al Administrador asignar cualquier usuario a los Cursos con rol de Docente o Alumno.
 - **RF-25:** El sistema debe permitir al Gestor asignar usuarios de rol General a los Cursos con rol de Docente o Alumno.
 - **RF-26:** El sistema debe permitir al Administrador modificar el rol de un Docente o Alumno dentro de un Curso.
+- **RF-42:** El sistema debe registrar por usuario y Curso la fecha de inscripción, el estado de participación (`EN_CURSO` o `FINALIZADO`) y, al finalizar, la fecha de finalización.
 
 ### Gestión de Recompensas
 
@@ -227,6 +230,7 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 | RF-24 | H6 |
 | RF-25 | H6 |
 | RF-26 | H6 |
+| RF-42 | H6 |
 | RF-27 | H8 |
 | RF-28 | H8 |
 | RF-29 | H8 |
@@ -245,7 +249,7 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 
 ## Reglas de negocio
 
-Las siguientes reglas se derivan de los requerimientos funcionales RF-01–RF-41 especificados en este documento:
+Las siguientes reglas se derivan de los requerimientos funcionales RF-01–RF-42 especificados en este documento:
 
 - Debe existir un único usuario con rol Administrador a nivel de Plataforma.
 - Todo usuario nuevo recibe el rol General de Plataforma.
@@ -255,6 +259,7 @@ Las siguientes reglas se derivan de los requerimientos funcionales RF-01–RF-41
 - Una recompensa requiere nombre y descripción como mínimo y puede asociarse a un curso o a un grupo de cursos.
 - El sistema verifica las condiciones de la recompensa antes de otorgarla.
 - Una recompensa vinculada a varios cursos se otorga al completar todos los cursos asociados.
+- Cada regla de una recompensa representa una alternativa: se cumple cuando se finalizaron todos los cursos asociados a esa regla; basta con que se cumpla una regla para que la recompensa sea elegible.
 - La recompensa puede configurarse para obtenerse una o varias veces por alumno y cada obtención se registra con su fecha.
 
 ## Requisitos no funcionales

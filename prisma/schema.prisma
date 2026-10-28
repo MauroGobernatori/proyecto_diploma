@@ -23,6 +23,11 @@ enum EstadoCurso {
   ELIMINADO
 }
 
+enum EstadoUsuarioCurso {
+  EN_CURSO
+  FINALIZADO
+}
+
 enum TipoRecurso {
   LINK
   VIDEO
@@ -55,6 +60,7 @@ model Usuario {
 
   // Relaciones
   roles                UsuarioRol[]
+  cursos               UsuarioCurso[]
   recompensasObtenidas RecompensaObtenida[]
   reportes             Reporte[]
 }
@@ -77,6 +83,7 @@ model Rol {
   permisos    RolPermiso[]
   usuarios    UsuarioRol[]
   
+
   @@unique([nombre, nivel])
 }
 
@@ -94,7 +101,7 @@ model UsuarioRol {
   id        String   @id @default(cuid())
   usuarioId String
   rolId     String
-  
+
   // Scopes opcionales (Si el rol es a nivel de Curso o Grupo)
   cursoId   String?
   grupoId   String?
@@ -125,8 +132,25 @@ model Curso {
 
   secciones        Seccion[]
   usuarios         UsuarioRol[]
+  inscripciones    UsuarioCurso[]
   reglasRecompensa RecompensaRegla[] // Cambia la relación directa por la de reglas
   reportes         Reporte[]
+}
+
+// Inscripción y progreso de cada usuario dentro de un curso.
+// Se mantiene separada de UsuarioRol, que registra roles y ámbitos.
+model UsuarioCurso {
+  usuarioId         String
+  cursoId           String
+  estado            EstadoUsuarioCurso @default(EN_CURSO)
+  fechaRegistro     DateTime           @default(now())
+  fechaFinalizacion DateTime?
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  curso   Curso   @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, cursoId])
+  @@map("Usuarios_Cursos")
 }
 
 model Seccion {
@@ -204,6 +228,7 @@ model Reporte {
   nombre        String
   tipo          String   // Ej: "Progreso Cursos", "Actividad Usuario"
   fechaCreacion DateTime @default(now())
+
   
   usuarioId     String?
   cursoId       String?

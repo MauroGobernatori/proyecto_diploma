@@ -1,5 +1,6 @@
 import { prisma } from "./db/client";
 import { ForbiddenError, NotFoundError } from "./errores";
+import { evaluarYOtorgarRecompensas } from "./recompensas";
 
 /**
  * Valida si un usuario tiene acceso a ver el contenido de un curso.
@@ -35,4 +36,45 @@ export async function validarAccesoACurso(usuarioId: string, cursoId: string) {
   }
 
   return curso;
+}
+
+/**
+ * Marca como finalizado el curso de un usuario y evalúa sus recompensas.
+ * La finalización y los otorgamientos se confirman en una única transacción.
+ */
+export async function finalizarCursoParaUsuario(
+  usuarioId: string,
+  cursoId: string
+) {
+  return prisma.$transaction(async (tx) => {
+    const actualizacion = await tx.usuarioCurso.updateMany({
+      where: {
+        usuarioId,
+        cursoId,
+        estado: "EN_CURSO",
+      },
+      data: {
+        estado: "FINALIZADO",
+        fechaFinalizacion: new Date(),
+      },
+    });
+
+    if (actualizacion.count === 0) {
+      const inscripcion = await tx.usuarioCurso.findUnique({
+        where: {
+          usuarioId_cursoId: { usuarioId, cursoId },
+        },
+        select: { estado: true },
+      });
+
+      if (!inscripcion) {
+        throw new NotFoundError("El usuario no está inscripto a este curso");
+      }
+
+      // Repetir la solicitud de finalización no vuelve a otorgar recompensas.
+      return [];
+    }
+
+    return evaluarYOtorgarRecompensas(usuarioId, cursoId, tx);
+  });
 }

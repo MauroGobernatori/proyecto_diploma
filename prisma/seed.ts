@@ -175,6 +175,21 @@ async function main() {
     },
   })
 
+  await prisma.usuarioCurso.createMany({
+    data: [
+      {
+        usuarioId: alumnoUsuario.id,
+        cursoId: cursoDemo.id,
+        estado: 'FINALIZADO',
+        fechaFinalizacion: new Date(),
+      },
+      {
+        usuarioId: adminUsuario.id,
+        cursoId: cursoDemo.id,
+      },
+    ],
+  })
+
   // 8. Crear Recompensa Demo con REGLA VINCULADA
   const hoy = new Date()
   const unMesDespues = new Date()
