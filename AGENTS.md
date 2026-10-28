@@ -36,6 +36,24 @@ Este repositorio contiene una aplicación de gestión de cursos y usuarios.
 - Antes de finalizar, informá la rama utilizada, los archivos modificados, las pruebas ejecutadas y el estado de los cambios.
 - Los cambios deben revisarse mediante un Pull Request antes de integrarse en `main`.
 
+## Commits y publicación de ramas
+
+- Cuando el usuario solicite explícitamente realizar un commit, podés ejecutarlo después de revisar los cambios y verificar que sean adecuados.
+- Cuando el usuario autorice explícitamente hacer push, podés publicar la rama de trabajo actual en el remoto configurado.
+- La autorización para hacer commit no implica autorización para hacer push, merge ni integrar cambios en `main`.
+- Antes de crear un commit, revisá `git status`, el diff completo y los archivos que se incluirán. No incluyas cambios preexistentes o ajenos a la tarea.
+- Ejecutá las pruebas y verificaciones pertinentes antes de crear el commit. Si alguna falla, informalo y no presentes el trabajo como completamente verificado.
+- Utilizá mensajes de commit descriptivos que expliquen el propósito del cambio. No uses mensajes genéricos como `update`, `changes` o `fix`.
+- El mensaje debe incluir un título breve y, cuando el cambio lo justifique, un cuerpo con los principales cambios realizados y su motivación.
+- No inventes cambios ni afirmes que se ejecutaron pruebas que no se realizaron.
+- Antes de hacer push, verificá que estés en la rama de trabajo correcta y que el destino remoto sea el esperado.
+- Publicá únicamente la rama autorizada. No utilices `--force` ni `--force-with-lease` sin autorización explícita.
+- Si el commit o el push falla, informá el error y la causa probable. No afirmes que se publicó una rama si la operación no se completó.
+- Al finalizar, informá el identificador del commit, su mensaje, la rama publicada y el resultado de las verificaciones.
+- Nunca realices commits, push ni merges en `main` como parte de este flujo.
+- Cuando el usuario solicite explícitamente crear o actualizar una Pull Request para la rama de trabajo, podés hacerlo después de verificar el diff y publicar la rama correspondiente. Nunca apruebes, aceptes ni integres la Pull Request; el usuario realizará esa acción manualmente.
+- Al crear o actualizar una Pull Request, redactá un título y una descripción claros que expliquen el propósito, los principales cambios y las verificaciones ejecutadas. No afirmes verificaciones que no se realizaron.
+
 ## Documentación del proyecto
 
 ### README.md: información general
