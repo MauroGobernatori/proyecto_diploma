@@ -81,12 +81,33 @@ export async function actualizarUsuario(
 }
 
 export async function asignarRolAUsuario(data: AsignarRolInput) {
-  return prisma.usuarioRol.create({
-    data: {
-      usuarioId: data.usuarioId,
-      rolId: data.rolId,
-      cursoId: data.cursoId || null,
-      grupoId: data.grupoId || null,
-    },
+  return prisma.$transaction(async (tx) => {
+    const asignacion = await tx.usuarioRol.create({
+      data: {
+        usuarioId: data.usuarioId,
+        rolId: data.rolId,
+        cursoId: data.cursoId || null,
+        grupoId: data.grupoId || null,
+      },
+    });
+
+    if (data.cursoId) {
+      await tx.usuarioCurso.upsert({
+        where: {
+          usuarioId_cursoId: {
+            usuarioId: data.usuarioId,
+            cursoId: data.cursoId,
+          },
+        },
+        // Si ya estaba inscripto, no reiniciar el progreso ni fechaRegistro.
+        update: {},
+        create: {
+          usuarioId: data.usuarioId,
+          cursoId: data.cursoId,
+        },
+      });
+    }
+
+    return asignacion;
   });
 }
