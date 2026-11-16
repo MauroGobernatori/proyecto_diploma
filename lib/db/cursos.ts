@@ -4,6 +4,8 @@ import {
   ActualizarCursoInput,
   CrearSeccionInput,
   CrearRecursoInput,
+  ModificarSeccionInput,
+  ModificarRecursoInput,
 } from "../schemas/curso";
 
 export async function obtenerCursos(soloVisibles = false) {
@@ -23,6 +25,7 @@ export async function obtenerCursoPorId(id: string) {
         orderBy: { orden: "asc" },
         include: {
           recursos: {
+            where: { estado: true },
             orderBy: { orden: "asc" },
           },
         },
@@ -60,6 +63,22 @@ export async function crearSeccion(data: CrearSeccionInput) {
   });
 }
 
+export async function modificarSeccion(
+  id: string,
+  data: ModificarSeccionInput
+) {
+  return prisma.seccion.update({
+    where: { id },
+    data,
+  });
+}
+
+export async function eliminarSeccion(id: string) {
+  return prisma.seccion.delete({
+    where: { id },
+  });
+}
+
 export async function crearRecurso(data: CrearRecursoInput) {
   return prisma.recurso.create({
     data: {
@@ -70,5 +89,22 @@ export async function crearRecurso(data: CrearRecursoInput) {
       orden: data.orden,
       seccionId: data.seccionId,
     },
+  });
+}
+
+export async function modificarRecurso(
+  id: string,
+  data: ModificarRecursoInput
+) {
+  return prisma.recurso.update({
+    where: { id },
+    data,
+  });
+}
+
+export async function eliminarRecurso(id: string) {
+  return prisma.recurso.update({
+    where: { id },
+    data: { estado: false },
   });
 }
