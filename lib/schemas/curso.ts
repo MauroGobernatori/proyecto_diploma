@@ -36,6 +36,10 @@ export const crearSeccionSchema = z.object({
   cursoId: z.string().min(1, "El ID del curso es requerido"),
 });
 
+export const modificarSeccionSchema = crearSeccionSchema
+  .pick({ nombre: true, orden: true })
+  .partial();
+
 export const crearRecursoSchema = z.object({
   nombre: z.string().min(1, "El nombre del recurso es requerido"),
   descripcion: z.string().optional(),
@@ -45,7 +49,13 @@ export const crearRecursoSchema = z.object({
   seccionId: z.string().min(1, "El ID de la sección es requerido"),
 });
 
+export const modificarRecursoSchema = crearRecursoSchema
+  .pick({ nombre: true, descripcion: true, tipo: true, url: true, orden: true })
+  .partial();
+
 export type CrearCursoInput = z.infer<typeof crearCursoSchema>;
 export type ActualizarCursoInput = z.infer<typeof actualizarCursoSchema>;
 export type CrearSeccionInput = z.infer<typeof crearSeccionSchema>;
+export type ModificarSeccionInput = z.infer<typeof modificarSeccionSchema>;
 export type CrearRecursoInput = z.infer<typeof crearRecursoSchema>;
+export type ModificarRecursoInput = z.infer<typeof modificarRecursoSchema>;

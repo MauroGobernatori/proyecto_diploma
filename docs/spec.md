@@ -91,6 +91,9 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 - Administrador y Gestor pueden crear cursos.
 - Administrador y Gestor pueden modificar cursos.
 - Administrador y Gestor pueden eliminar cursos.
+- Administrador y Gestor pueden crear, modificar y eliminar secciones y recursos dentro de los cursos.
+- Al eliminar una sección, se eliminan también sus recursos asociados.
+- Al eliminar un recurso, este deja de estar activo.
 
 ### H8 — Gestionar recompensas
 
@@ -141,6 +144,17 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 - Se puede configurar una recompensa para que un mismo alumno la obtenga una única vez.
 - Se puede configurar una recompensa para que un mismo alumno la obtenga múltiples veces.
 
+### H13 — Gestionar secciones y recursos de cursos
+
+**Como** Administrador o Gestor, **quiero** modificar y eliminar secciones y recursos de un curso, **para** mantener actualizado el contenido y la estructura de los cursos.
+
+**Criterios de aceptación**
+
+- Se puede modificar el nombre y el orden de una sección.
+- Se puede eliminar una sección y también sus recursos asociados.
+- Se puede modificar el nombre, la descripción, el tipo, la URL y el orden de un recurso.
+- Se puede eliminar un recurso, que queda inactivo.
+
 ## Requerimientos funcionales
 
 ### Gestión de Usuarios
@@ -174,6 +188,10 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 - **RF-21:** El sistema debe permitir al Administrador y Gestor crear Cursos.
 - **RF-22:** El sistema debe permitir al Administrador y Gestor modificar Cursos.
 - **RF-23:** El sistema debe permitir al Administrador y Gestor eliminar Cursos.
+- **RF-43:** El sistema debe permitir modificar el nombre y el orden de una sección de un curso.
+- **RF-44:** El sistema debe permitir eliminar una sección y los recursos asociados a ella.
+- **RF-45:** El sistema debe permitir modificar el nombre, la descripción, el tipo, la URL y el orden de un recurso.
+- **RF-46:** El sistema debe permitir eliminar un recurso, marcándolo como inactivo.
 
 ### Gestión de Inscripciones y Roles en Cursos
 
@@ -227,6 +245,10 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 | RF-21 | H7 |
 | RF-22 | H7 |
 | RF-23 | H7 |
+| RF-43 | H13 |
+| RF-44 | H13 |
+| RF-45 | H13 |
+| RF-46 | H13 |
 | RF-24 | H6 |
 | RF-25 | H6 |
 | RF-26 | H6 |
