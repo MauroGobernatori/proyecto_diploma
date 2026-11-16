@@ -1,5 +1,8 @@
 import { PrismaClient } from "@prisma/client";
+import { loadEnvConfig } from "@next/env";
 import argon2 from "argon2";
+
+loadEnvConfig(process.cwd());
 
 const prisma = new PrismaClient();
 const options = {

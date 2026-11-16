@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
-    "db:hash-passwords": "node --env-file=.env scripts/hash-existing-passwords.mjs",
+    "db:hash-passwords": "node scripts/hash-existing-passwords.mjs",
     "test": "vitest run"
   },
   "dependencies": {
