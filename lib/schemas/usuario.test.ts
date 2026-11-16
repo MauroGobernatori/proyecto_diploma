@@ -5,7 +5,7 @@ describe("crearUsuarioSchema", () => {
   it("debe aceptar un usuario válido", () => {
     const usuarioValido = {
       usuario: "mauro_g",
-      contrasenia: "123456",
+      contrasenia: "ejemplo-seguro-123",
       nombre: "Mauro",
       apellido: "Gobernatori",
       email: "mauro@ejemplo.com",
@@ -19,7 +19,7 @@ describe("crearUsuarioSchema", () => {
   it("debe rechazar un DNI con letras o de longitud incorrecta", () => {
     const usuarioDniInvalido = {
       usuario: "mauro_g",
-      contrasenia: "123456",
+      contrasenia: "ejemplo-seguro-123",
       nombre: "Mauro",
       apellido: "Gobernatori",
       email: "mauro@ejemplo.com",
@@ -33,7 +33,7 @@ describe("crearUsuarioSchema", () => {
   it("debe rechazar un nombre con números", () => {
     const usuarioNombreInvalido = {
       usuario: "mauro_g",
-      contrasenia: "123456",
+      contrasenia: "ejemplo-seguro-123",
       nombre: "Mauro123", // Inválido
       apellido: "Gobernatori",
       email: "mauro@ejemplo.com",

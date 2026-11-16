@@ -43,6 +43,23 @@ describe("validarAccesoACurso", () => {
     await expect(
       validarAccesoACurso("user_123", "curso_oculto")
     ).rejects.toThrow(ForbiddenError);
+
+    expect(prisma.usuarioRol.findFirst).toHaveBeenCalledWith({
+      where: {
+        usuarioId: "user_123",
+        OR: [
+          { cursoId: "curso_oculto", grupoId: null },
+          {
+            cursoId: null,
+            grupoId: null,
+            rol: {
+              nivel: "PLATAFORMA",
+              nombre: { in: ["Administrador", "Gestor"] },
+            },
+          },
+        ],
+      },
+    });
   });
 
   it("debe lanzar NotFoundError si el curso fue eliminado", async () => {

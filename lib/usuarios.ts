@@ -14,14 +14,21 @@ export async function tienePermiso(
   clavePermiso: string,
   scope?: ScopePermiso
 ): Promise<boolean> {
+  const asignacionesPorAmbito =
+    scope?.cursoId || scope?.grupoId
+      ? [
+          {
+            cursoId: scope.cursoId ?? null,
+            grupoId: scope.grupoId ?? null,
+          },
+          { cursoId: null, grupoId: null },
+        ]
+      : [{ cursoId: null, grupoId: null }];
+
   const usuarioRoles = await prisma.usuarioRol.findMany({
     where: {
       usuarioId,
-      OR: [
-        { cursoId: scope?.cursoId ?? null },
-        { grupoId: scope?.grupoId ?? null },
-        { cursoId: null, grupoId: null }, // Roles globales de plataforma
-      ],
+      OR: asignacionesPorAmbito,
     },
     include: {
       rol: {

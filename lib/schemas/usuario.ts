@@ -15,7 +15,8 @@ export const crearUsuarioSchema = z.object({
     ),
   contrasenia: z
     .string()
-    .min(6, "La contraseña debe tener al menos 6 caracteres"),
+    .min(12, "La contraseña debe tener al menos 12 caracteres")
+    .max(128, "La contraseña no puede superar los 128 caracteres"),
   nombre: z
     .string()
     .min(1, "El nombre es requerido")

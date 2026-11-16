@@ -24,9 +24,15 @@ export async function validarAccesoACurso(usuarioId: string, cursoId: string) {
     where: {
       usuarioId,
       OR: [
-        { cursoId },
-        { rol: { nombre: "Administrador" } },
-        { rol: { nombre: "Gestor" } },
+        { cursoId, grupoId: null },
+        {
+          cursoId: null,
+          grupoId: null,
+          rol: {
+            nivel: "PLATAFORMA",
+            nombre: { in: ["Administrador", "Gestor"] },
+          },
+        },
       ],
     },
   });
