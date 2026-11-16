@@ -47,7 +47,7 @@ enum EstadoRecompensa {
 model Usuario {
   id          String   @id @default(cuid())
   usuario     String   @unique
-  contrasenia String
+  contraseniaHash String
   nombre      String
   apellido    String
   email       String   @unique

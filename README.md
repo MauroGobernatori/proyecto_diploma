@@ -62,17 +62,20 @@ Los requisitos, criterios de aceptación, casos de uso, iteraciones, hitos, supu
 - **Next.js 16** con App Router, **React 19** y **TypeScript** para la aplicación web.
 - **Prisma 6** y **PostgreSQL** para persistencia.
 - **Zod** para validación de datos.
+- **Auth.js** para sesiones e inicio de sesión con credenciales de la base propia.
+- **Argon2id** para proteger las contraseñas almacenadas.
 - **Tailwind CSS 4** para estilos.
 - **Vitest** para pruebas unitarias y **ESLint 9** para análisis estático.
 
 La estructura actual está organizada así:
 
 ```text
-app/             Interfaz y layout de Next.js
-lib/             Lógica de dominio, validaciones, errores y respuestas HTTP
+app/             Interfaz, acciones y rutas de Next.js
+lib/             Lógica de dominio, autenticación, validaciones y errores
 lib/db/          Consultas de persistencia mediante Prisma
 lib/schemas/     Esquemas y tipos de entrada con Zod
 prisma/          Modelo de datos y seed de demostración
+specs/           Especificaciones acotadas de funcionalidades
 ```
 
 El esquema de Prisma representa usuarios y roles con permisos y ámbitos de Plataforma/Curso/Grupo, cursos con secciones y recursos, grupos, recompensas con reglas y recompensas obtenidas, y reportes.
@@ -85,9 +88,17 @@ Instalá las dependencias (el `postinstall` del proyecto genera el cliente Prism
 npm install
 ```
 
-Configurá `DATABASE_URL` y `DIRECT_URL` para tu base PostgreSQL y luego iniciá el servidor de desarrollo:
+Configurá `DATABASE_URL` y `DIRECT_URL` para tu base PostgreSQL. Aplicá las migraciones y convertí las contraseñas guardadas por versiones anteriores antes de iniciar la aplicación:
 
 ```bash
+npx prisma migrate dev
+npm run db:hash-passwords
+```
+
+Generá el secreto de sesión y luego iniciá el servidor de desarrollo:
+
+```bash
+npx auth secret
 npm run dev
 ```
 
@@ -100,7 +111,9 @@ npm run build
 npm run start
 ```
 
-El seed declarado en `package.json` es `tsx prisma/seed.ts`. **El script elimina los registros existentes de varias tablas antes de cargar los datos demo**; ejecutalo solo contra una base local descartable o después de respaldar los datos. Para invocarlo con Prisma:
+El login utiliza cuentas activas de la base y permite ingresar con nombre de usuario o email. La conversión conserva las cuentas y se puede repetir con seguridad.
+
+El seed declarado en `package.json` es `tsx prisma/seed.ts`. **El script elimina los registros existentes de varias tablas antes de cargar los datos demo**; ejecutalo solo contra una base local descartable o después de respaldar los datos. Antes de ejecutarlo, configurá `SEED_ADMIN_PASSWORD` y `SEED_STUDENT_PASSWORD` en el entorno local, cada una con al menos 12 caracteres; no guardes esas claves en Git. Para invocarlo con Prisma:
 
 ```bash
 npx prisma db seed

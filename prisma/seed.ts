@@ -5,11 +5,23 @@ import {
   TipoRecurso,
   EstadoRecompensa,
 } from '@prisma/client'
+import { hashPassword } from '../lib/security/passwords'
 
 const prisma = new PrismaClient()
 
 async function main() {
   console.log('Iniciando carga de datos de prueba (Seed)...')
+
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD
+  const studentPassword = process.env.SEED_STUDENT_PASSWORD
+
+  if (!adminPassword || adminPassword.length < 12) {
+    throw new Error('Definí SEED_ADMIN_PASSWORD con al menos 12 caracteres antes de ejecutar el seed.')
+  }
+
+  if (!studentPassword || studentPassword.length < 12) {
+    throw new Error('Definí SEED_STUDENT_PASSWORD con al menos 12 caracteres antes de ejecutar el seed.')
+  }
 
   // 1. Limpieza de base de datos (orden inverso a las dependencias)
   await prisma.reporte.deleteMany()
@@ -51,7 +63,7 @@ async function main() {
     data: { nombre: 'Administrador', nivel: NivelRol.PLATAFORMA, esSistema: true },
   })
 
-  const rolGestor = await prisma.rol.create({
+  await prisma.rol.create({
     data: { nombre: 'Gestor', nivel: NivelRol.PLATAFORMA, esSistema: true },
   })
 
@@ -67,11 +79,11 @@ async function main() {
     data: { nombre: 'Alumno', nivel: NivelRol.CURSO, esSistema: true },
   })
 
-  const rolJefe = await prisma.rol.create({
+  await prisma.rol.create({
     data: { nombre: 'Jefe', nivel: NivelRol.GRUPO, esSistema: true },
   })
 
-  const rolIntegrante = await prisma.rol.create({
+  await prisma.rol.create({
     data: { nombre: 'Integrante', nivel: NivelRol.GRUPO, esSistema: true },
   })
 
@@ -87,7 +99,7 @@ async function main() {
   const adminUsuario = await prisma.usuario.create({
     data: {
       usuario: 'admin',
-      contrasenia: 'admin123',
+      contraseniaHash: await hashPassword(adminPassword),
       nombre: 'Mauro',
       apellido: 'Gobernatori',
       email: 'admin@hunko.com',
@@ -107,7 +119,7 @@ async function main() {
   const alumnoUsuario = await prisma.usuario.create({
     data: {
       usuario: 'alumno1',
-      contrasenia: 'alumno123',
+      contraseniaHash: await hashPassword(studentPassword),
       nombre: 'Juan',
       apellido: 'Pérez',
       email: 'juan.perez@empresa.com',

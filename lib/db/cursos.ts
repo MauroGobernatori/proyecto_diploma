@@ -17,6 +17,25 @@ export async function obtenerCursos(soloVisibles = false) {
   });
 }
 
+export async function obtenerCursosDelUsuario(usuarioId: string) {
+  return prisma.usuarioCurso.findMany({
+    where: { usuarioId },
+    include: {
+      curso: {
+        select: {
+          id: true,
+          nombre: true,
+          descripcion: true,
+          tema: true,
+          estado: true,
+          visibilidad: true,
+        },
+      },
+    },
+    orderBy: { fechaRegistro: "desc" },
+  });
+}
+
 export async function obtenerCursoPorId(id: string) {
   return prisma.curso.findUnique({
     where: { id },

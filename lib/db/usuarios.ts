@@ -4,6 +4,7 @@ import {
   ActualizarUsuarioInput,
   AsignarRolInput,
 } from "../schemas/usuario";
+import { hashPassword } from "../security/passwords";
 
 export async function obtenerUsuarios() {
   return prisma.usuario.findMany({
@@ -30,7 +31,18 @@ export async function obtenerUsuarios() {
 export async function obtenerUsuarioPorId(id: string) {
   return prisma.usuario.findUnique({
     where: { id },
-    include: {
+    select: {
+      id: true,
+      usuario: true,
+      nombre: true,
+      apellido: true,
+      email: true,
+      edad: true,
+      empresa: true,
+      institucion: true,
+      dni: true,
+      activo: true,
+      creadoEn: true,
       roles: {
         include: {
           rol: {
@@ -51,22 +63,65 @@ export async function obtenerUsuarioPorEmailOUsuario(identificador: string) {
     where: {
       OR: [{ email: identificador }, { usuario: identificador }],
     },
+    select: {
+      id: true,
+      usuario: true,
+      nombre: true,
+      apellido: true,
+      email: true,
+      activo: true,
+    },
   });
 }
 
 export async function crearUsuario(data: CrearUsuarioInput) {
-  return prisma.usuario.create({
-    data: {
-      usuario: data.usuario,
-      contrasenia: data.contrasenia,
-      nombre: data.nombre,
-      apellido: data.apellido,
-      email: data.email,
-      edad: data.edad,
-      empresa: data.empresa,
-      institucion: data.institucion,
-      dni: data.dni || null,
-    },
+  const contraseniaHash = await hashPassword(data.contrasenia);
+
+  return prisma.$transaction(async (tx) => {
+    const rolGeneral = await tx.rol.upsert({
+      where: {
+        nombre_nivel: { nombre: "General", nivel: "PLATAFORMA" },
+      },
+      update: {},
+      create: {
+        nombre: "General",
+        nivel: "PLATAFORMA",
+        esSistema: true,
+      },
+      select: { id: true },
+    });
+
+    const usuario = await tx.usuario.create({
+      data: {
+        usuario: data.usuario,
+        contraseniaHash,
+        nombre: data.nombre,
+        apellido: data.apellido,
+        email: data.email.toLowerCase(),
+        edad: data.edad,
+        empresa: data.empresa,
+        institucion: data.institucion,
+        dni: data.dni || null,
+      },
+      select: {
+        id: true,
+        usuario: true,
+        nombre: true,
+        apellido: true,
+        email: true,
+        activo: true,
+        creadoEn: true,
+      },
+    });
+
+    await tx.usuarioRol.create({
+      data: {
+        usuarioId: usuario.id,
+        rolId: rolGeneral.id,
+      },
+    });
+
+    return usuario;
   });
 }
 
@@ -76,8 +131,41 @@ export async function actualizarUsuario(
 ) {
   return prisma.usuario.update({
     where: { id },
-    data,
+    data: {
+      ...data,
+      ...(data.email ? { email: data.email.toLowerCase() } : {}),
+    },
+    select: {
+      id: true,
+      usuario: true,
+      nombre: true,
+      apellido: true,
+      email: true,
+      activo: true,
+      creadoEn: true,
+    },
   });
+}
+
+export async function desactivarUsuario(id: string) {
+  return prisma.usuario.update({
+    where: { id },
+    data: { activo: false },
+    select: { id: true, activo: true },
+  });
+}
+
+export async function esAdministradorDePlataforma(usuarioId: string) {
+  const asignacion = await prisma.usuarioRol.findFirst({
+    where: {
+      usuarioId,
+      cursoId: null,
+      grupoId: null,
+      rol: { nombre: "Administrador", nivel: "PLATAFORMA" },
+    },
+    select: { id: true },
+  });
+  return asignacion !== null;
 }
 
 export async function asignarRolAUsuario(data: AsignarRolInput) {

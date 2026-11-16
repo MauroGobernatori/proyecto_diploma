@@ -24,6 +24,7 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 
 - El sistema permite dar de alta, dar de baja y modificar usuarios.
 - Cada usuario creado tiene Nombre, Apellido, Nombre de usuario, Email y Contraseña.
+- Las contraseñas nuevas deben tener al menos 12 caracteres y como máximo 128.
 - DNI, Institución y Empresa se pueden guardar como datos opcionales.
 - El sistema requiere los datos obligatorios para crear un usuario y permite almacenar información adicional opcional.
 
@@ -275,6 +276,7 @@ Las siguientes reglas se derivan de los requerimientos funcionales RF-01–RF-42
 
 - Debe existir un único usuario con rol Administrador a nivel de Plataforma.
 - Todo usuario nuevo recibe el rol General de Plataforma.
+- Toda contraseña nueva se almacena con hash Argon2id; la base no conserva contraseñas en texto plano.
 - Los roles se asignan en los ámbitos de Plataforma, Curso y Grupo. Un usuario puede tener roles diferentes según el curso o grupo.
 - Solo el Administrador puede cambiar el rol de Plataforma de cualquier usuario.
 - Un Gestor asigna a cursos únicamente usuarios que tengan rol General; el Administrador puede asignar cualquier usuario.
@@ -287,7 +289,7 @@ Las siguientes reglas se derivan de los requerimientos funcionales RF-01–RF-42
 ## Requisitos no funcionales
 
 - **RNF-01 — Autenticación:** autenticar a los usuarios mediante nombre de usuario y contraseña.
-- **RNF-02 — Protección de credenciales:** almacenar las contraseñas de forma encriptada.
+- **RNF-02 — Protección de credenciales:** almacenar las contraseñas con un hash adaptativo Argon2id; nunca conservarlas en texto plano ni cifrarlas de forma reversible.
 - **RNF-03 — Disponibilidad:** mantener una disponibilidad de al menos el 99%.
 - **RNF-04 — Rendimiento:** responder a las solicitudes en menos de 3 segundos en condiciones normales.
 - **RNF-05 — Usabilidad:** ofrecer una interfaz intuitiva y fácil de usar.
