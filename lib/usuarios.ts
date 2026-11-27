@@ -1,6 +1,7 @@
 import { prisma } from "./db/client";
+import { administradorSingleton } from "./auth/administrator-singleton";
 
-interface ScopePermiso {
+export interface ScopePermiso {
   cursoId?: string;
   grupoId?: string;
 }
@@ -44,6 +45,8 @@ export async function tienePermiso(
   });
 
   if (!usuarioRoles.length) return false;
+
+  if (administradorSingleton.esAdministradorEnAsignaciones(usuarioRoles)) return true;
 
   // Recorrer los roles asignados y sus permisos
   for (const ur of usuarioRoles) {
