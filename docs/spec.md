@@ -12,7 +12,7 @@
 | Jefe | Grupo | Rol disponible dentro del ámbito de un grupo. |
 | Integrante | Grupo | Rol disponible dentro del ámbito de un grupo. |
 
-Una persona puede tener roles diferentes según el curso o grupo. El README indica un único usuario con rol Administrador a nivel de Plataforma.
+Una persona puede tener roles diferentes según el curso o grupo. Debe existir como máximo una asignación global con rol Administrador de Plataforma; ese usuario tiene todos los permisos de la aplicación.
 
 ## Historias de Usuario
 
@@ -92,9 +92,15 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 - Administrador y Gestor pueden crear cursos.
 - Administrador y Gestor pueden modificar cursos.
 - Administrador y Gestor pueden eliminar cursos.
-- Administrador y Gestor pueden crear, modificar y eliminar secciones y recursos dentro de los cursos.
+- Administrador puede inscribir y desinscribir alumnos de los cursos; Gestor puede hacerlo para usuarios con rol General de Plataforma.
+- La baja de un alumno conserva sus entregas y notas como historial, pero lo quita del listado y de los reportes de inscriptos.
+- La baja de un curso es lógica: lo oculta del catálogo sin borrar su contenido ni el historial de participación.
+- Administrador, Gestor y Docente pueden crear, modificar y eliminar secciones y recursos dentro de los cursos.
 - Al eliminar una sección, se eliminan también sus recursos asociados.
+- Antes de borrar una sección, el sistema solicita confirmación e informa que el contenido se eliminará permanentemente.
 - Al eliminar un recurso, este deja de estar activo.
+- Los recursos pueden ocultarse a los Alumnos; Administrador, Gestor y Docente pueden seguir consultándolos.
+- Un recurso de tipo Página de contenido permite guardar y mostrar texto.
 
 ### H8 — Gestionar recompensas
 
@@ -147,14 +153,34 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 
 ### H13 — Gestionar secciones y recursos de cursos
 
-**Como** Administrador o Gestor, **quiero** modificar y eliminar secciones y recursos de un curso, **para** mantener actualizado el contenido y la estructura de los cursos.
+**Como** Administrador, Gestor o Docente, **quiero** administrar secciones y recursos de un curso, **para** mantener actualizado el contenido y la estructura de los cursos.
 
 **Criterios de aceptación**
 
 - Se puede modificar el nombre y el orden de una sección.
 - Se puede eliminar una sección y también sus recursos asociados.
-- Se puede modificar el nombre, la descripción, el tipo, la URL y el orden de un recurso.
+- Antes de eliminar una sección, el sistema solicita confirmar el borrado permanente de la sección y todos sus recursos.
+- Se puede modificar el nombre, la descripción, el tipo, la URL, el orden y el contenido de un recurso.
+- Un recurso Página de contenido permite editar y consultar el texto de su contenido.
 - Se puede eliminar un recurso, que queda inactivo.
+- Los recursos ocultos no se muestran a los Alumnos.
+
+### H14 — Seguir y calificar actividades del curso
+
+**Como** Alumno, **quiero** entregar actividades y conocer sus notas, **para** seguir mi progreso en las lecciones y evaluaciones.
+
+**Criterios de aceptación**
+
+- Lecciones y evaluaciones pueden contener actividades de opción múltiple, verdadero/falso o respuesta abierta.
+- Cada alumno puede entregar una vez cada actividad.
+- Las actividades objetivas se califican automáticamente en escala de 0 a 10: 10 para una respuesta correcta y 0 para una incorrecta.
+- Las respuestas abiertas quedan entregadas y pendientes hasta que Administrador, Gestor o Docente las corrige con una nota de 0 a 10.
+- La actividad pasa a estado `RESUELTA` cuando tiene nota, automática o manual.
+- Administrador, Gestor y Docente pueden descargar desde el curso un libro Excel `.xlsx`.
+- El reporte incluye nombre y fechas del curso, alumnos inscriptos, estado y fechas de participación, porcentaje de actividades resueltas y estado, nota y fechas de entrega/corrección por actividad.
+- El libro incluye un gráfico de columnas con la distribución de las notas obtenidas en las actividades calificadas.
+
+La especificación particular se encuentra en [`specs/gestion-contenido-y-reporte-curso.md`](../specs/gestion-contenido-y-reporte-curso.md).
 
 ## Requerimientos funcionales
 
@@ -193,6 +219,15 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 - **RF-44:** El sistema debe permitir eliminar una sección y los recursos asociados a ella.
 - **RF-45:** El sistema debe permitir modificar el nombre, la descripción, el tipo, la URL y el orden de un recurso.
 - **RF-46:** El sistema debe permitir eliminar un recurso, marcándolo como inactivo.
+- **RF-47:** El sistema debe permitir configurar la visibilidad de un recurso; los recursos ocultos no son accesibles para los Alumnos.
+- **RF-48:** El sistema debe permitir organizar actividades dentro de lecciones y evaluaciones.
+- **RF-49:** El sistema debe permitir a los Alumnos entregar una vez cada actividad.
+- **RF-50:** El sistema debe calificar automáticamente respuestas correctas/incorrectas de opción múltiple y verdadero/falso en escala de 0 a 10.
+- **RF-51:** El sistema debe permitir a Administrador, Gestor y Docente corregir respuestas abiertas con una nota de 0 a 10.
+- **RF-52:** El sistema debe registrar estado, respuesta, nota y fechas de entrega/corrección por Alumno y actividad.
+- **RF-53:** El sistema debe generar y descargar un reporte de curso con datos de inscripción, progreso de actividades y notas.
+- **RF-54:** El sistema debe permitir crear y modificar recursos de tipo Página de contenido con texto visible según los permisos del recurso.
+- **RF-55:** El reporte de curso debe incluir un gráfico de distribución de las notas registradas en las actividades.
 
 ### Gestión de Inscripciones y Roles en Cursos
 
@@ -250,6 +285,15 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 | RF-44 | H13 |
 | RF-45 | H13 |
 | RF-46 | H13 |
+| RF-47 | H13 |
+| RF-48 | H14 |
+| RF-49 | H14 |
+| RF-50 | H14 |
+| RF-51 | H14 |
+| RF-52 | H14 |
+| RF-53 | H14 |
+| RF-54 | H13 |
+| RF-55 | H14 |
 | RF-24 | H6 |
 | RF-25 | H6 |
 | RF-26 | H6 |
@@ -272,9 +316,10 @@ Una persona puede tener roles diferentes según el curso o grupo. El README indi
 
 ## Reglas de negocio
 
-Las siguientes reglas se derivan de los requerimientos funcionales RF-01–RF-42 especificados en este documento:
+Las siguientes reglas se derivan de los requerimientos funcionales RF-01–RF-55 especificados en este documento:
 
-- Debe existir un único usuario con rol Administrador a nivel de Plataforma.
+- Solo puede existir un usuario con rol Administrador a nivel de Plataforma; el seed de instalación crea la asignación inicial si todavía no existe.
+- El Administrador de Plataforma tiene todos los permisos de la aplicación y no puede ser desactivado desde la interfaz.
 - Todo usuario nuevo recibe el rol General de Plataforma.
 - Toda contraseña nueva se almacena con hash Argon2id; la base no conserva contraseñas en texto plano.
 - Los roles se asignan en los ámbitos de Plataforma, Curso y Grupo. Un usuario puede tener roles diferentes según el curso o grupo.
@@ -285,6 +330,8 @@ Las siguientes reglas se derivan de los requerimientos funcionales RF-01–RF-42
 - Una recompensa vinculada a varios cursos se otorga al completar todos los cursos asociados.
 - Cada regla de una recompensa representa una alternativa: se cumple cuando se finalizaron todos los cursos asociados a esa regla; basta con que se cumpla una regla para que la recompensa sea elegible.
 - La recompensa puede configurarse para obtenerse una o varias veces por alumno y cada obtención se registra con su fecha.
+- Las actividades ocultas no están disponibles para los Alumnos ni forman parte del denominador de su progreso.
+- Una actividad se considera resuelta cuando tiene nota; la respuesta abierta permanece entregada hasta su corrección.
 
 ## Requisitos no funcionales
 

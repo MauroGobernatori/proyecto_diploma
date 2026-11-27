@@ -32,8 +32,21 @@ enum TipoRecurso {
   LINK
   VIDEO
   DOCUMENTO
+  PAGINA_CONTENIDO
+  LECCION
   ACTIVIDAD
   EVALUACION
+}
+
+enum TipoActividad {
+  OPCION_MULTIPLE
+  VERDADERO_FALSO
+  RESPUESTA_ABIERTA
+}
+
+enum EstadoEntregaActividad {
+  ENTREGADA
+  RESUELTA
 }
 
 enum EstadoRecompensa {
@@ -63,6 +76,8 @@ model Usuario {
   cursos               UsuarioCurso[]
   recompensasObtenidas RecompensaObtenida[]
   reportes             Reporte[]
+  entregasActividad    ActividadEntrega[] @relation("EntregaAlumno")
+  correccionesActividad ActividadEntrega[] @relation("EntregaCorrector")
 }
 
 model Permiso {
@@ -105,6 +120,7 @@ model UsuarioRol {
   // Scopes opcionales (Si el rol es a nivel de Curso o Grupo)
   cursoId   String?
   grupoId   String?
+  administradorUnico Boolean @default(false)
 
   usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   rol       Rol     @relation(fields: [rolId], references: [id], onDelete: Cascade)
@@ -167,13 +183,51 @@ model Recurso {
   id          String      @id @default(cuid())
   nombre      String
   descripcion String?
+  contenido   String?     @db.Text
   tipo        TipoRecurso
   url         String?
   orden       Int         @default(1)
   estado      Boolean     @default(true)
+  visibilidad Boolean     @default(true)
   seccionId   String
+  padreId     String?
 
-  seccion Seccion @relation(fields: [seccionId], references: [id], onDelete: Cascade)
+  seccion      Seccion    @relation(fields: [seccionId], references: [id], onDelete: Cascade)
+  padre        Recurso?   @relation("ContenidoCurso", fields: [padreId], references: [id], onDelete: Cascade)
+  hijos        Recurso[]  @relation("ContenidoCurso")
+  actividad    Actividad?
+
+  @@index([padreId])
+}
+
+model Actividad {
+  id                 String       @id @default(cuid())
+  recursoId          String       @unique
+  tipo               TipoActividad
+  opciones           Json?
+  respuestaCorrecta String?
+
+  recurso  Recurso             @relation(fields: [recursoId], references: [id], onDelete: Cascade)
+  entregas ActividadEntrega[]
+}
+
+model ActividadEntrega {
+  id             String                @id @default(cuid())
+  actividadId    String
+  usuarioId      String
+  respuesta      String
+  estado         EstadoEntregaActividad @default(ENTREGADA)
+  nota           Decimal?              @db.Decimal(4, 2)
+  fechaEntrega   DateTime              @default(now())
+  fechaCorreccion DateTime?
+  corregidaPorId String?
+
+  actividad Actividad @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  usuario   Usuario   @relation("EntregaAlumno", fields: [usuarioId], references: [id], onDelete: Cascade)
+  corrector Usuario?  @relation("EntregaCorrector", fields: [corregidaPorId], references: [id], onDelete: SetNull)
+
+  @@unique([actividadId, usuarioId])
+  @@index([usuarioId, estado])
 }
 
 // --- GRUPOS ---

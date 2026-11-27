@@ -26,7 +26,8 @@ Desarrollar un sistema de gestión de aprendizaje que permita organizar, adminis
 - Asignación de roles en los ámbitos de plataforma, curso y grupo.
 - Creación y administración de cursos.
 - Organización del contenido de cada curso mediante secciones.
-- Administración de recursos educativos, como enlaces, videos, documentos, actividades y evaluaciones.
+- Administración de recursos educativos, como enlaces, videos, documentos, páginas de contenido, lecciones y evaluaciones con actividades.
+- Seguimiento de entregas y calificaciones, y descarga de reportes de curso en Excel.
 - Gestión de grupos.
 - Gestión y otorgamiento de recompensas relacionadas con cursos.
 
@@ -62,6 +63,8 @@ Los requisitos, criterios de aceptación, casos de uso, iteraciones, hitos, supu
 - **Next.js 16** con App Router, **React 19** y **TypeScript** para la aplicación web.
 - **Prisma 6** y **PostgreSQL** para persistencia.
 - **Zod** para validación de datos.
+- **ExcelJS** para generar libros `.xlsx` con reportes de curso.
+- **PureImage** para generar el gráfico PNG de distribución de notas incluido en el libro Excel.
 - **Auth.js** para sesiones e inicio de sesión con credenciales de la base propia.
 - **Argon2id** para proteger las contraseñas almacenadas.
 - **Tailwind CSS 4** para estilos.
@@ -78,7 +81,7 @@ prisma/          Modelo de datos y seed de demostración
 specs/           Especificaciones acotadas de funcionalidades
 ```
 
-El esquema de Prisma representa usuarios y roles con permisos y ámbitos de Plataforma/Curso/Grupo, cursos con secciones y recursos, grupos, recompensas con reglas y recompensas obtenidas, y reportes.
+El esquema de Prisma representa usuarios y roles con permisos y ámbitos de Plataforma/Curso/Grupo, cursos con secciones y recursos, actividades con entregas y notas, grupos, recompensas con reglas y recompensas obtenidas, y reportes.
 
 ## Ejecución local
 
@@ -113,7 +116,7 @@ npm run start
 
 El login utiliza cuentas activas de la base y permite ingresar con nombre de usuario o email. La conversión conserva las cuentas y se puede repetir con seguridad.
 
-El seed declarado en `package.json` es `tsx prisma/seed.ts`. **El script elimina los registros existentes de varias tablas antes de cargar los datos demo**; ejecutalo solo contra una base local descartable o después de respaldar los datos. Antes de ejecutarlo, configurá `SEED_ADMIN_PASSWORD` y `SEED_STUDENT_PASSWORD` en el entorno local, cada una con al menos 12 caracteres; no guardes esas claves en Git. Para invocarlo con Prisma:
+El seed declarado en `package.json` es `tsx prisma/seed.ts`. Agrega de forma idempotente un curso, tres alumnos y actividades de demostración, y no elimina registros ni modifica las contraseñas de cuentas existentes. Configurá `SEED_STUDENT_PASSWORD` con al menos 12 caracteres; `SEED_ADMIN_PASSWORD` también es necesaria si todavía no existe un Administrador global. No guardes esas claves en Git. Para invocarlo con Prisma:
 
 ```bash
 npx prisma db seed
@@ -128,4 +131,4 @@ npm test
 npm run lint
 ```
 
-Las pruebas actuales cubren reglas de acceso a cursos, otorgamiento de recompensas y validaciones de entrada. No se observó una suite de pruebas de interfaz o de extremo a extremo.
+Las pruebas actuales cubren reglas de acceso a cursos, otorgamiento de recompensas, validaciones de entrada, calificación automática y la estructura del reporte Excel. No se observó una suite de pruebas de interfaz o de extremo a extremo.

@@ -46,4 +46,27 @@ describe("tienePermiso", () => {
       })
     );
   });
+
+  it("grants every requested permission to the unique platform administrator", async () => {
+    vi.mocked(prisma.usuarioRol.findMany).mockResolvedValue([
+      {
+        id: "asignacion-admin",
+        usuarioId: "admin-1",
+        rolId: "rol-admin",
+        cursoId: null,
+        grupoId: null,
+        administradorUnico: true,
+        rol: {
+          id: "rol-admin",
+          nombre: "Administrador",
+          nivel: "PLATAFORMA",
+          esSistema: true,
+          permisos: [],
+        },
+      },
+    ] as never);
+
+    await expect(tienePermiso("admin-1", "permiso:nuevo:sin-asignar", { cursoId: "curso-1" }))
+      .resolves.toBe(true);
+  });
 });

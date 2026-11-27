@@ -5,6 +5,7 @@ import {
   AsignarRolInput,
 } from "../schemas/usuario";
 import { hashPassword } from "../security/passwords";
+import { administradorSingleton } from "../auth/administrator-singleton";
 
 export async function obtenerUsuarios() {
   return prisma.usuario.findMany({
@@ -156,16 +157,7 @@ export async function desactivarUsuario(id: string) {
 }
 
 export async function esAdministradorDePlataforma(usuarioId: string) {
-  const asignacion = await prisma.usuarioRol.findFirst({
-    where: {
-      usuarioId,
-      cursoId: null,
-      grupoId: null,
-      rol: { nombre: "Administrador", nivel: "PLATAFORMA" },
-    },
-    select: { id: true },
-  });
-  return asignacion !== null;
+  return administradorSingleton.esAdministrador(usuarioId);
 }
 
 export async function asignarRolAUsuario(data: AsignarRolInput) {
